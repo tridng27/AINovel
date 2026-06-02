@@ -33,7 +33,25 @@ async def db():
 
 @pytest_asyncio.fixture(scope="function")
 async def client(db: AsyncSession):
-    app.dependency_overrides[get_db] = lambda: db
+    async def override_get_db():
+        yield db
+
+    app.dependency_overrides[get_db] = override_get_db
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
+
+
+# ── Helpers ────────────────────────────────────────────────────────────────────
+
+async def register_and_login(client: AsyncClient, suffix: str = "") -> tuple[dict, str]:
+    """Register a user and return (token_headers, user_id)."""
+    res = await client.post("/api/v1/auth/register", json={
+        "username": f"user{suffix}",
+        "email": f"user{suffix}@test.com",
+        "password": "Password123!",
+    })
+    data = res.json()
+    headers = {"Authorization": f"Bearer {data['access_token']}"}
+    me = await client.get("/api/v1/auth/me", headers=headers)
+    return headers, me.json()["id"]
