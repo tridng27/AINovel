@@ -10,6 +10,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 30
+EMAIL_VERIFY_EXPIRE_HOURS = 24
 
 
 def hash_password(password: str) -> str:
@@ -32,3 +33,8 @@ def create_refresh_token(subject: str) -> str:
 
 def decode_token(token: str) -> dict:
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+
+
+def create_email_verify_token(user_id: str) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(hours=EMAIL_VERIFY_EXPIRE_HOURS)
+    return jwt.encode({"sub": user_id, "exp": expire, "type": "email_verify"}, settings.SECRET_KEY, algorithm=ALGORITHM)
