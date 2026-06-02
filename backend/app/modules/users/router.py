@@ -35,7 +35,7 @@ async def change_password(
     await service.change_password(current_user.id, body, db)
 
 
-@router.post("/me/avatar", response_model=dict)
+@router.post("/me/avatar", response_model=schemas.AvatarResponse)
 async def upload_avatar(
     file: UploadFile,
     current_user: User = Depends(get_current_user),
@@ -43,7 +43,7 @@ async def upload_avatar(
 ):
     content = await file.read()
     url = await service.upload_avatar(current_user.id, content, file.content_type or "image/jpeg", db)
-    return {"avatar_url": url}
+    return schemas.AvatarResponse(avatar_url=url)
 
 
 @router.get("/{username}", response_model=schemas.PublicUserResponse)
