@@ -5,7 +5,15 @@ from app.core.authorize import get_current_user
 from app.core.database import get_db
 from app.models.user import User
 from app.modules.auth import service
-from app.modules.auth.schemas import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse, UserResponse
+from app.modules.auth.schemas import (
+    LoginRequest,
+    RefreshRequest,
+    RegisterRequest,
+    ResendVerificationRequest,
+    TokenResponse,
+    UserResponse,
+    VerifyEmailRequest,
+)
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -33,3 +41,13 @@ async def logout(body: RefreshRequest, db: AsyncSession = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 async def me(user: User = Depends(get_current_user)):
     return user
+
+
+@router.post("/verify-email", response_model=UserResponse)
+async def verify_email(body: VerifyEmailRequest, db: AsyncSession = Depends(get_db)):
+    return await service.verify_email(body.token, db)
+
+
+@router.post("/resend-verification", status_code=204)
+async def resend_verification(body: ResendVerificationRequest, db: AsyncSession = Depends(get_db)):
+    await service.resend_verification(body.email, db)

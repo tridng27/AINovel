@@ -31,3 +31,11 @@ class UserResponse(BaseModel):
     is_verified: bool
 
     model_config = {"from_attributes": True}
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr
