@@ -1,24 +1,22 @@
-import asyncio
-import pytest
+import os
+
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 from app.core.database import Base, get_db
 from app.main import app
 
-TEST_DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/ainovel_test"
+# Đọc từ env (CI truyền DATABASE_URL); fallback cho chạy local.
+TEST_DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres",
+)
 
-engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-TestSession = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+# NullPool: mỗi test (event loop riêng) tạo connection mới, không tái dùng chéo loop.
+engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
+TestSession = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -45,7 +43,7 @@ async def client(db: AsyncSession):
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 async def register_and_login(client: AsyncClient, suffix: str = "") -> tuple[dict, str]:
-    """Register a user and return (token_headers, user_id)."""
+    """Register a user and return (token_headers, user_id). Register auto-logs-in."""
     res = await client.post("/api/v1/auth/register", json={
         "username": f"user{suffix}",
         "email": f"user{suffix}@test.com",
@@ -53,5 +51,4 @@ async def register_and_login(client: AsyncClient, suffix: str = "") -> tuple[dic
     })
     data = res.json()
     headers = {"Authorization": f"Bearer {data['access_token']}"}
-    me = await client.get("/api/v1/auth/me", headers=headers)
-    return headers, me.json()["id"]
+    return headers, data["id"]

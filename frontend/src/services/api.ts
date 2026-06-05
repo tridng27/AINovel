@@ -2,6 +2,17 @@ import axios from "axios";
 
 export const api = axios.create({ baseURL: "/api/v1" });
 
+/** Lấy thông báo lỗi thân thiện từ response của FastAPI ({ detail: ... }). */
+export function getErrorMessage(err: unknown, fallback = "Đã có lỗi xảy ra"): string {
+  if (axios.isAxiosError(err)) {
+    const detail = err.response?.data?.detail;
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg;
+    if (err.code === "ERR_NETWORK") return "Không kết nối được máy chủ";
+  }
+  return fallback;
+}
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;

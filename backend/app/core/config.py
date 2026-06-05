@@ -1,3 +1,6 @@
+import json
+
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -5,6 +8,22 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://redis:6379/0"
     RABBITMQ_URL: str = "amqp://guest:guest@rabbitmq:5672//"
     SECRET_KEY: str
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def _validate_secret_key(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("SECRET_KEY must not be empty")
+        try:
+            parsed = json.loads(v)
+        except json.JSONDecodeError:
+            return v  # chuỗi thường (vd hex) → hợp lệ
+        if not isinstance(parsed, str):
+            raise ValueError(
+                "SECRET_KEY là giá trị JSON ('null'/'true'/số) — python-jose sẽ "
+                "parse thành None và làm hỏng JWT. Hãy dùng chuỗi hex ngẫu nhiên."
+            )
+        return v
     ANTHROPIC_API_KEY: str = ""
     MINIO_ENDPOINT: str = "minio:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"

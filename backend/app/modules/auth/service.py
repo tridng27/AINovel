@@ -19,19 +19,38 @@ from app.core.security import (
     verify_password,
 )
 from app.models.user import User, UserSession
-from app.modules.auth.schemas import LoginRequest, RegisterRequest, TokenResponse
+from app.modules.auth.schemas import LoginRequest, RegisterRequest, RegisterResponse, TokenResponse
 
 
-async def register_user(body: RegisterRequest, db: AsyncSession) -> User:
+async def register_user(body: RegisterRequest, db: AsyncSession) -> RegisterResponse:
     existing = await db.execute(select(User).where(User.email == body.email))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
     user = User(username=body.username, email=body.email, password_hash=hash_password(body.password))
     db.add(user)
+    await db.flush()  # lấy user.id trước khi tạo token
+
+    access = create_access_token(str(user.id))
+    refresh = create_refresh_token(str(user.id))
+    db.add(UserSession(
+        user_id=user.id,
+        token_hash=hashlib.sha256(refresh.encode()).hexdigest(),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=30),
+    ))
     await db.commit()
     await db.refresh(user)
-    return user
+
+    return RegisterResponse(
+        id=user.id,
+        username=user.username,
+        email=user.email,
+        role=user.role,
+        avatar_url=user.avatar_url,
+        is_verified=user.is_verified,
+        access_token=access,
+        refresh_token=refresh,
+    )
 
 
 async def login_user(body: LoginRequest, db: AsyncSession) -> TokenResponse:

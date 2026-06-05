@@ -3,8 +3,8 @@ import { api } from "./api";
 export const aiService = {
   streamCompletion: (novelId: string, text: string): EventSource => {
     const token = localStorage.getItem("access_token");
-    const url = `/api/v1/ai/novels/${novelId}/complete?token=${token}`;
-    // POST body via fetch + ReadableStream for SSE
+    const params = new URLSearchParams({ token: token ?? "", prompt: text });
+    const url = `/api/v1/ai/novels/${novelId}/complete?${params.toString()}`;
     return new EventSource(url);
   },
 

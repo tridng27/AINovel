@@ -1,0 +1,51 @@
+.home2 {
+  max-width: 1100px;
+}
+
+.hero2 {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 36px;
+  min-height: 320px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface);
+  display: flex;
+  align-items: flex-end;
+}
+
+.hero2-overlay {
+  width: 100%;
+  padding: 32px;
+  background: linear-gradient(to top, rgba(10, 12, 16, 0.95) 0%, rgba(10, 12, 16, 0.6) 45%, rgba(10, 12, 16, 0.1) 100%);
+}
+
+.hero2-tag {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.hero2-overlay h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+}
+
+.hero2-overlay p {
+  max-width: 560px;
+  color: #d4d9e2;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.hero2-meta {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 18px;
+}

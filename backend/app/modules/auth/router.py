@@ -9,6 +9,7 @@ from app.modules.auth.schemas import (
     LoginRequest,
     RefreshRequest,
     RegisterRequest,
+    RegisterResponse,
     ResendVerificationRequest,
     TokenResponse,
     UserResponse,
@@ -18,7 +19,7 @@ from app.modules.auth.schemas import (
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/register", response_model=UserResponse, status_code=201)
+@router.post("/register", response_model=RegisterResponse, status_code=201)
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     return await service.register_user(body, db)
 

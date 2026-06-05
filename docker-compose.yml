@@ -19,6 +19,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
       - RABBITMQ_URL=${RABBITMQ_URL}
+    ports:
+      - "8000:8000"          # mở ra host để frontend dev (vite) gọi trực tiếp
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,6 +64,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-noveluser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-noveldb}
+    ports:
+      - "5432:5432"          # mở ra host để app GUI (DBeaver/pgAdmin) nối vào
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

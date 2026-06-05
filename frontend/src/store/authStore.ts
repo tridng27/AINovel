@@ -1,11 +1,12 @@
 import { create } from "zustand";
+import type { UserResponse } from "../services/auth";
 
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
-  user: { id: string; username: string; email: string; role: string } | null;
+  user: UserResponse | null;
   setTokens: (access: string, refresh: string) => void;
-  setUser: (user: AuthState["user"]) => void;
+  setUser: (user: UserResponse | null) => void;
   logout: () => void;
 }
 

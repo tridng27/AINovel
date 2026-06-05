@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, EmailStr
 
 
@@ -23,7 +25,7 @@ class RefreshRequest(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: str
+    id: UUID
     username: str
     email: str
     role: str
@@ -31,6 +33,13 @@ class UserResponse(BaseModel):
     is_verified: bool
 
     model_config = {"from_attributes": True}
+
+
+class RegisterResponse(UserResponse):
+    """Đăng ký xong tự đăng nhập luôn: trả cả thông tin user lẫn token."""
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
 
 
 class VerifyEmailRequest(BaseModel):
